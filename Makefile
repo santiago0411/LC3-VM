@@ -4,6 +4,13 @@ CFLAGS_RELEASE = -Wall -O3
 
 SRC_DIR = src
 SRC = $(wildcard $(SRC_DIR)/*.c)
+
+ifeq ($(OS),Windows_NT)
+    PLATFORM_MACRO = -DPLATFORM_WINDOWS
+else
+    PLATFORM_MACRO = -DPLATFORM_LINUX
+endif
+
 OBJ_DEBUG = $(patsubst $(SRC_DIR)/%.c, bin-int/debug-x64/%.o, $(SRC))
 OBJ_RELEASE = $(patsubst $(SRC_DIR)/%.c, bin-int/release-x64/%.o, $(SRC))
 
@@ -12,36 +19,44 @@ BIN_INT_DIR_RELEASE = bin-int/release-x64
 BIN_DIR_DEBUG = bin/debug-x64
 BIN_DIR_RELEASE = bin/release-x64
 
-TARGET_DEBUG = $(BIN_DIR_DEBUG)/my_program_debug.exe
-TARGET_RELEASE = $(BIN_DIR_RELEASE)/my_program_release.exe
-
-OBJ_DEBUG = $(BIN_INT_DIR_DEBUG)/main.o
-OBJ_RELEASE = $(BIN_INT_DIR_RELEASE)/main.o
+ifeq ($(OS),Windows_NT)
+    TARGET_DEBUG = $(BIN_DIR_DEBUG)/my-vm.exe
+    TARGET_RELEASE = $(BIN_DIR_RELEASE)/my-vm.exe
+else
+    TARGET_DEBUG = $(BIN_DIR_DEBUG)/my-vm
+    TARGET_RELEASE = $(BIN_DIR_RELEASE)/my-vm
+endif
 
 all: debug release
 
+# Create directories
 $(BIN_INT_DIR_DEBUG) $(BIN_DIR_DEBUG):
 	mkdir -p $(BIN_INT_DIR_DEBUG) $(BIN_DIR_DEBUG)
-
-debug: $(BIN_INT_DIR_DEBUG) $(TARGET_DEBUG)
-
-$(TARGET_DEBUG): $(OBJ_DEBUG)
-	$(CC) $(CFLAGS_DEBUG) -o $@ $^
-
-$(OBJ_DEBUG): $(SRC) | $(BIN_INT_DIR_DEBUG)
-	$(CC) $(CFLAGS_DEBUG) -c $(SRC) -o $@
-
 
 $(BIN_INT_DIR_RELEASE) $(BIN_DIR_RELEASE):
 	mkdir -p $(BIN_INT_DIR_RELEASE) $(BIN_DIR_RELEASE)
 
-release: $(BIN_INT_DIR_RELEASE) $(TARGET_RELEASE)
+
+# Debug Config
+debug: $(TARGET_DEBUG)
+
+$(TARGET_DEBUG): $(OBJ_DEBUG)
+	$(CC) $(CFLAGS_DEBUG) $(PLATFORM_MACRO) -o $@ $^
+
+$(BIN_INT_DIR_DEBUG)/%.o: $(SRC_DIR)/%.c | $(BIN_INT_DIR_DEBUG)
+	$(CC) $(CFLAGS_DEBUG) $(PLATFORM_MACRO) -c $< -o $@
+
+
+
+release: $(TARGET_RELEASE)
 
 $(TARGET_RELEASE): $(OBJ_RELEASE)
-	$(CC) $(CFLAGS_RELEASE) -o $@ $^
+	$(CC) $(CFLAGS_RELEASE) $(PLATFORM_MACRO) -o $@ $^
 
-$(OBJ_RELEASE): $(SRC) | $(BIN_INT_DIR_RELEASE)
-	$(CC) $(CFLAGS_RELEASE) -c $(SRC) -o $@
+$(BIN_INT_DIR_RELEASE)/%.o: $(SRC_DIR)/%.c | $(BIN_INT_DIR_RELEASE)
+	$(CC) $(CFLAGS_RELEASE) $(PLATFORM_MACRO) -c $< -o $@
+
+
 
 clean:
 	rm -rf bin-int
