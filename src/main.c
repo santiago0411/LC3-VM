@@ -499,10 +499,6 @@ bool trap(u16 instruction)
 
 int main(int argc, char** argv)
 {
-#ifdef PLATFORM_WINDOWS
-    printf("Platform Windows\n");
-#endif
-
     if (argc < 2)
     {
         printf("my-vm [image-file1] ...\n");
