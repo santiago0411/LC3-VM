@@ -19,12 +19,14 @@ BIN_INT_DIR_RELEASE = bin-int/release-x64
 BIN_DIR_DEBUG = bin/debug-x64
 BIN_DIR_RELEASE = bin/release-x64
 
+TARGET_NAME = lc3vm
+
 ifeq ($(OS),Windows_NT)
-    TARGET_DEBUG = $(BIN_DIR_DEBUG)/my-vm.exe
-    TARGET_RELEASE = $(BIN_DIR_RELEASE)/my-vm.exe
+    TARGET_DEBUG = $(BIN_DIR_DEBUG)/$(TARGET_NAME).exe
+    TARGET_RELEASE = $(BIN_DIR_RELEASE)/$(TARGET_NAME).exe
 else
-    TARGET_DEBUG = $(BIN_DIR_DEBUG)/my-vm
-    TARGET_RELEASE = $(BIN_DIR_RELEASE)/my-vm
+    TARGET_DEBUG = $(BIN_DIR_DEBUG)/$(TARGET_NAME)
+    TARGET_RELEASE = $(BIN_DIR_RELEASE)/$(TARGET_NAME)
 endif
 
 all: debug release
@@ -47,7 +49,7 @@ $(BIN_INT_DIR_DEBUG)/%.o: $(SRC_DIR)/%.c | $(BIN_INT_DIR_DEBUG)
 	$(CC) $(CFLAGS_DEBUG) $(PLATFORM_MACRO) -c $< -o $@
 
 
-
+# Release Config
 release: $(TARGET_RELEASE)
 
 $(TARGET_RELEASE): $(OBJ_RELEASE)
